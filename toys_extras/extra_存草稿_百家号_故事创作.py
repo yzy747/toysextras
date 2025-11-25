@@ -1,9 +1,9 @@
 from toys_extras.base_web import BaseWeb
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page, Expect as pwexpect
 from toys_logger import logger
 import os
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 class Toy(BaseWeb):
@@ -143,15 +143,15 @@ class Toy(BaseWeb):
                         self.page.get_by_role("button", name="确定").click()
                         self.random_wait(500, 1000)
                         try:
-                            expect(self.page.get_by_role("button", name="确定")).not_to_be_visible(timeout=3_000)
-                            break
+                            pwexpect(self.page.get_by_role("button", name="确定")).not_to_be_visible(timeout=3_000)
+                            pwexpect(self.page.locator("div.cheetah-modal-content").first.not_to_be_visible(timeout=3_000))
                         except Exception:
                             pass
                         self.random_wait(2000, 3000)
                     else:
-                        logger.warning(f"选择故事封面图失败，重试3次后仍未出现图片")
+                        logger.warning(f"选择故事封面图失败，重试5次后仍未出现图片")
                         row[1] = "失败"
-                        row[2] = "选择故事封面图失败，重试3次后仍未出现图片"
+                        row[2] = "选择故事封面图失败，重试5次后仍未出现图片"
                         self.is_failed = True
                         continue
                     
@@ -194,6 +194,3 @@ class Toy(BaseWeb):
                 row[4] = article_url
                 self.is_failed = True
                 continue
-    
-
-        
