@@ -8,7 +8,7 @@ import random
 from PIL import Image
 from io import BytesIO
 
-__version__ = '1.1.8'
+__version__ = '1.1.9'
 
 
 class Toy(BaseWeb):
@@ -21,7 +21,11 @@ class Toy(BaseWeb):
         self.content_locator = self.page.locator("#detail-desc .note-text")
 
     def get_article_title(self) -> str:
-        return self.title_locator.text_content(timeout=2_000).strip()
+        try:
+            title = self.title_locator.text_content(timeout=2_000).strip()
+        except TimeoutError:
+            title = ""
+        return title
 
     def get_article_content(self, tags: bool = False) -> str:
         content = ""
@@ -81,6 +85,7 @@ class Toy(BaseWeb):
         保留话题 = True if self.config.get("扩展", "保留话题 -- 填是或否，是则采集时保留笔记中#话题") == "是" else False
         文章间隔 = self.config.get("扩展", "文章间隔 -- 填数字，单位秒，表示两篇笔记之间的时间间隔")
         图片下载间隔 = self.config.get("扩展", "图片下载间隔 -- 填数字，单位秒")
+        无标题时首行作标题 = True if self.config.get("扩展", "无标题时首行作标题") == "是" else False
         if not 笔记链接 and not self.files:
             return
         if not 文章间隔 or not 文章间隔.isdigit():
@@ -108,9 +113,18 @@ class Toy(BaseWeb):
                 self.title_locator.or_(self.content_locator).last.wait_for()
                 title = self.get_article_title()
                 content = self.get_article_content(tags=保留话题)
-                if not title or not content:
-                    self.result_table_view.append([url, "失败", "标题或内容为空", ""])
+                if not title and not content:
+                    self.result_table_view.append([url, "失败", "标题和内容均为空", ""])
                     continue
+                if not title:
+                    if 无标题时首行作标题:
+                        if content.startswith("#"):
+                            self.result_table_view.append([url, "失败", "无标题且内容以#开头，无法作为标题", ""])
+                            continue
+                        title = content.splitlines()[0]
+                    else:
+                        self.result_table_view.append([url, "失败", "标题为空，跳过", ""])
+                        continue
                 file_title = sanitize_filename(title)
                 # 检查文件标题是否已存在，如果存在则添加序号
                 folder_title = file_title
