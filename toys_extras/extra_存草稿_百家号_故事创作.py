@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect as pwexpect
 from toys_logger import logger
 import os
 
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 class Toy(BaseWeb):
@@ -30,7 +30,7 @@ class Toy(BaseWeb):
         self.内容输入框 = self.page.locator('div[contenteditable][aria-placeholder="请输入故事内容，至少1000字"]')
         self.文章第1行 = self.内容输入框.locator("p.bjh-paragraph").first
         self.文章第2行 = self.内容输入框.locator("p.bjh-paragraph").nth(1)
-        self.button_导入文档 = self.page.locator("div.cheetah-upload-select")
+        self.button_导入文档 = self.page.locator("div.cheetah-upload-select input")
         self.button_保存 = self.page.get_by_role("button", name="保存")
         self.上传文档成功提示 = self.page.get_by_text("文件上传成功")
         self.保存草稿成功提示 = self.page.get_by_text("保存成功")
@@ -72,7 +72,7 @@ class Toy(BaseWeb):
                 self.page.goto(self.url)
                 self.内容输入框.click()
                 with self.page.expect_file_chooser() as fc_info:
-                    self.button_导入文档.click()
+                    self.button_导入文档.evaluate("el => el.click()")
                 file_chooser = fc_info.value
                 file_chooser.set_files(file)
                 self.上传文档成功提示.wait_for(state="visible", timeout=60000)
@@ -137,10 +137,10 @@ class Toy(BaseWeb):
                 # 故事封面
                 self.故事封面.click()
                 try:
-                    self.page.locator("div.cheetah-modal-content img").first.wait_for(state="visible", timeout=30_000)
-                    self.random_wait(2000, 3000)
                     for retry in range(5):
                         try:
+                            self.page.locator("div.cheetah-modal-content img").first.wait_for(state="visible", timeout=30_000)
+                            self.random_wait(2000, 3000)
                             self.page.get_by_role("button", name="确定").click(timeout=3_000)
                             self.random_wait(500, 1000)
                             pwexpect(self.page.get_by_role("button", name="确定")).not_to_be_visible(timeout=3_000)
@@ -153,8 +153,7 @@ class Toy(BaseWeb):
                         row[1] = "失败"
                         row[2] = "选择故事封面图失败，重试5次后仍未出现图片"
                         self.is_failed = True
-                        continue
-                    
+                        continue  
                 except Exception:
                     logger.warning(f"选择故事封面图失败", exc_info=True)      
                 if 付费故事:
