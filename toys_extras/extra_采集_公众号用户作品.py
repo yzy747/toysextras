@@ -8,7 +8,7 @@ import requests
 import os
 import re
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 
 class Toy(BaseWeb):
@@ -142,25 +142,25 @@ class Toy(BaseWeb):
                 if not publish_list:
                     break
                 for app_msg in publish_list:
-                    app_msg = json.loads(app_msg["publish_info"]).get("appmsgex", [])
-                    if not app_msg:
+                    app_msgs = json.loads(app_msg["publish_info"]).get("appmsgex", [])
+                    if not app_msgs:
                         continue
-                    app_msg = app_msg[0]
-                    publish_time = int(app_msg["update_time"])
-                    # publish_time 小于发布时间起始，跳过
-                    if publish_time < publish_time_start_timestamp:
-                        break_flag = True
-                        break
-                    # publish_time 大于发布时间截止，跳过
-                    if publish_time > publish_time_end_timestamp:
-                        continue
-                    # 将publish_time转换为"YYYY-MM-DD HH:MM:SS"格式
-                    publish_time = datetime.fromtimestamp(publish_time).strftime("%Y-%m-%d %H:%M:%S")
-                    title = app_msg["title"]
-                    link = app_msg["link"]
-                    author = 公众号昵称
-                    collect_articles.append([title, link, publish_time, author])
-                    self.result_table_view.append([title, link, publish_time, author])
+                    for app_msg in app_msgs:
+                        publish_time = int(app_msg["update_time"])
+                        # publish_time 小于发布时间起始，跳过
+                        if publish_time < publish_time_start_timestamp:
+                            break_flag = True
+                            break
+                        # publish_time 大于发布时间截止，跳过
+                        if publish_time > publish_time_end_timestamp:
+                            continue
+                        # 将publish_time转换为"YYYY-MM-DD HH:MM:SS"格式
+                        publish_time = datetime.fromtimestamp(publish_time).strftime("%Y-%m-%d %H:%M:%S")
+                        title = app_msg["title"]
+                        link = app_msg["link"]
+                        author = 公众号昵称
+                        collect_articles.append([title, link, publish_time, author])
+                        self.result_table_view.append([title, link, publish_time, author])
                 if break_flag:
                     break
                 else:
@@ -175,5 +175,4 @@ class Toy(BaseWeb):
         sheet.append(self.result_table_view[0])
         for row in collect_articles:
             sheet.append(row)
-
         workbook.save(filepath)
