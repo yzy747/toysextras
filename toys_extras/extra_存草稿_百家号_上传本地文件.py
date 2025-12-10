@@ -4,7 +4,7 @@ from toys_logger import logger
 from datetime import datetime, timedelta
 import os
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 class Toy(BaseWeb):
 
@@ -12,7 +12,7 @@ class Toy(BaseWeb):
         super().__init__(page)
         self.result_table_view: list = [['文章名称', '状态', '错误信息', '文章链接']]
         self.url = "https://baijiahao.baidu.com/builder/rc/edit?type=news&is_from_cms=1"
-        self.文章标题输入框 = self.page.get_by_placeholder("请输入标题（2 - 64字）")
+        self.文章标题输入框 = self.page.locator(".input-box div[contenteditable=true]")
         self.文章第1行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc p").first
         self.文章第2行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc p").nth(1)
         self.hove_导入文档 = self.page.locator(".edui-for-bjhInsertionDrawer")
@@ -184,4 +184,3 @@ class Toy(BaseWeb):
                 self.is_failed = True
         if not self.page.is_closed():
             self.page.close()
-
