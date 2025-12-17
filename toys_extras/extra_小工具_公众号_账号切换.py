@@ -3,7 +3,7 @@ from playwright.sync_api import Page
 from toys_logger import logger
 
 
-__version__ = '1.0.4'
+__version__ = '1.0.5'
 
 
 class Toy(BaseWeb):
@@ -16,7 +16,6 @@ class Toy(BaseWeb):
 
     def play(self):
         停留时长 = self.config.get("扩展", "停留时长(秒)", fallback="0")
-        关闭比特窗口 = True if self.config.get("扩展", "关闭比特窗口") == "是" else False
 
         停留时长 = int(停留时长) * 1000
         pages = self.page.context.pages
@@ -70,6 +69,3 @@ class Toy(BaseWeb):
             self.is_failed = True
             self.result_table_view.append([current_login_nickname, "失败", "切换回当前登录账号失败"])
             logger.error("切换回当前登录账号失败", exc_info=True)
-        finally:
-            if 关闭比特窗口 and self.figure_browser:
-                self.figure_browser.close_browser()
