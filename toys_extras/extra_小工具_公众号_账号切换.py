@@ -1,9 +1,10 @@
 from toys_extras.base_web import BaseWeb
 from playwright.sync_api import Page
 from toys_logger import logger
+import re
 
 
-__version__ = '1.0.5'
+__version__ = '1.0.6'
 
 
 class Toy(BaseWeb):
@@ -28,8 +29,9 @@ class Toy(BaseWeb):
             page = self.page
             page.goto(self.url)
         page.locator('[title="公众号"]').wait_for()
-        if page.locator("a", has_text="登录").is_visible():
-            page.locator("a", has_text="登录").click()
+        login_button = page.locator("a", has_text=re.compile("^登录$"))
+        if login_button.is_visible():
+            login_button.click()
         
         # 切换至小程序
         page.locator(".account_box-body").click()
