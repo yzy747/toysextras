@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -310,30 +310,30 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                         popup.locator('.js_create_article[title="写新文章"]').evaluate("element => element.click()")
                     self.random_wait()
                     article_div = popup.locator("div[contenteditable=true]:visible")
-                    if "<html" in file_content or "<body" in file_content or "<head" in file_content:
+                    # if "<html" in file_content or "<body" in file_content or "<head" in file_content:
                         # 提取file_content中的中文内容
-                        chinese_src = "".join(re.findall(r"[\u4e00-\u9fa5]+", file_content))
-                        # 当chinese_dst前10个不在chinese_src中时，尝试重新粘贴
-                        for _ in range(10):
-                            article_div.click()
-                            copy_to_clipboard(file_content)
-                            logger.info(f"粘贴 {file_content[:10]} 到文章中")
-                            popup.keyboard.press("Control+V")
-                            chinese_dst = "".join(re.findall(r"[\u4e00-\u9fa5]+", article_div.inner_text()))
-                            logger.info(f"粘贴完成，文章内容为 {article_div.inner_text()[:10]}")
-                            if chinese_dst and chinese_src and chinese_dst[:10] not in chinese_src:
-                                article_div.clear()
-                                self.random_wait(1000, 4000)
-                                continue
-                            else:
-                                article_div.evaluate("element => element.scrollIntoView({ behavior: 'smooth', block: 'start' })")
-                                self.random_wait(500, 1500)
-                                break
-                    else:
-                        article_div.evaluate(
-                            "(element, html) => { element.innerHTML = html }",
-                            file_content
-                        )
+                    chinese_src = "".join(re.findall(r"[\u4e00-\u9fa5]+", file_content))
+                    # 当chinese_dst前10个不在chinese_src中时，尝试重新粘贴
+                    for _ in range(10):
+                        article_div.click()
+                        copy_to_clipboard(file_content)
+                        logger.info(f"粘贴 {file_content[:10]} 到文章中")
+                        popup.keyboard.press("Control+V")
+                        chinese_dst = "".join(re.findall(r"[\u4e00-\u9fa5]+", article_div.inner_text()))
+                        logger.info(f"粘贴完成，文章内容为 {article_div.inner_text()[:10]}")
+                        if chinese_dst and chinese_src and chinese_dst[:10] not in chinese_src:
+                            article_div.clear()
+                            self.random_wait(1000, 5000)
+                            continue
+                        else:
+                            article_div.evaluate("element => element.scrollIntoView({ behavior: 'smooth', block: 'start' })")
+                            self.random_wait(500, 1500)
+                            break
+                    # else:
+                    #     article_div.evaluate(
+                    #         "(element, html) => { element.innerHTML = html }",
+                    #         file_content
+                    #     )
                 self.random_wait()
                 h1 = popup.locator("#ueditor_0 div[contenteditable=true] h1").first
                 if h1.is_visible():
