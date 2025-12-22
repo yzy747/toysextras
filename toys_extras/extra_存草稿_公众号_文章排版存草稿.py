@@ -468,12 +468,6 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                         line[2] = "未识别到保存草稿按钮"
                         continue
                     if 多篇合一:
-                        try:
-                            for article in popup.locator("#appmsgItem").all():
-                                article.click()
-                                self.random_wait(2_000, 3_000)
-                        except:
-                            pass
                         need_to_move_files = []
                         for l in lines:
                             if l[4] == line[4]:
