@@ -3,7 +3,7 @@ from playwright.sync_api import Page, expect as pwexpect
 from toys_logger import logger
 import os
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 class Toy(BaseWeb):
@@ -116,7 +116,7 @@ class Toy(BaseWeb):
                 self.分发封面.locator(".cheetah-radio-wrapper", has_text="多图").locator("input").click()
                 self.page.locator('.cheetah-form-item-control-input .cheetah-spin-container').first.click()
                 try:
-                    self.page.locator("div.cheetah-modal-content img").first.wait_for(state="visible", timeout=30_000)
+                    self.page.locator("div.cheetah-modal-content img").locator("visible=true").first.wait_for(timeout=30_000)
                     image_locator = self.page.locator(
                         "div.cheetah-modal-content div", has=self.page.locator(".cheetah-upload-wrapper")
                         ).last.locator(
@@ -139,7 +139,7 @@ class Toy(BaseWeb):
                 try:
                     for retry in range(5):
                         try:
-                            self.page.locator("div.cheetah-modal-content img").first.wait_for(state="visible", timeout=30_000)
+                            self.page.locator("div.cheetah-modal-content img").locator("visible=true").first.wait_for(timeout=10_000)
                             self.random_wait(2000, 3000)
                             self.page.get_by_role("button", name="确定").click(timeout=3_000)
                             self.random_wait(500, 1000)
