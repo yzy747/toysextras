@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.3"
+__version__ = "1.2.4"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -120,6 +120,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         事件地点 = self.config.get("扩展", "事件地点")
         平台推荐 = self.config.get("扩展", "平台推荐")
         文中空行 = True if self.config.get("扩展", "文中插入1个空行 -- 填写是或否", fallback="否") == "是" else False
+        随机分割 = True if self.config.get("扩展", "随机分割", fallback="否") == "是" else False
         指定图片链接 = self.config.get("扩展", "指定图片链接 -- 包含图片链接的txt文件，每行一个，不填则使用md文件同目录图片")
         插图数量 = self.config.get("扩展", "插图数量")
         插图位置 = self.config.get("扩展", "插图位置 -- 不填时图片均匀插入文章，填写格式'1,5,7'")
@@ -282,7 +283,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                             if image_urls:
                                 file_content = insert_image_link_to_markdown(file_content, image_urls, positions)
 
-                        file_content = self.article_convert(file_content, random.choice(template_dirs), topics=topics)
+                        file_content = self.article_convert(file_content, random.choice(template_dirs), topics=topics, random_split=随机分割)
 
                         if 排版输出目录:
                             is_exist = os.path.exists(排版输出目录)
