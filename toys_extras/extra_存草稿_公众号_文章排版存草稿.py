@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.4"
+__version__ = "1.2.5"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -184,7 +184,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         if (插图数量 and not specified_image_links) or 是否存稿:
             page_home = context.new_page()
             page_home.goto(self.url)
-            page_home.locator('[title="公众号"]').wait_for()
+            page_home.locator('[title="公众号"]').or_(page_home.locator('[title="服务号"]')).wait_for()
             login_button = page_home.locator("a", has_text=re.compile(r"^登录$"))
             if login_button.is_visible():
                 login_button.click()
