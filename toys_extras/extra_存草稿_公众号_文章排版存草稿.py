@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.5"
+__version__ = "1.2.6"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -341,7 +341,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                     title = h1.inner_text()
                     h1.evaluate("element => element.remove()")
                 else:
-                    title = file_name_without_ext
+                    title = file_name_without_ext.replace("改写_", "")
                 popup.get_by_placeholder("请在这里输入标题").fill(title[:64])
 
                 if 文中空行:
