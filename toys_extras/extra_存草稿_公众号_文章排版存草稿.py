@@ -1,7 +1,7 @@
 from toys_extras.base_web import BaseWeb
 from playwright.sync_api import Page
 from toys_logger import logger
-from toys_utils import MarkdownToHtmlConverter, insert_image_link_to_markdown, copy_to_clipboard
+from toys_utils import MarkdownToHtmlConverter, insert_image_link_to_markdown, copy_to_clipboard, exec_cmd
 import os
 import re
 import random
@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.6"
+__version__ = "1.2.7"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -104,7 +104,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             base_dir = Path(self.file_path.split(",")[0]).parent
         else:
             return
-
+        前置执行 = self.config.get("扩展", "前置执行", fallback="")
         是否存稿 = True if self.config.get("扩展", "是否存稿 -- 填是或否，仅选择md文件时生效") == "是" else False
         多篇合一 = True if self.config.get("扩展", "多篇合一 -- 编辑页新建消息") == "是" else False
         作者 = self.config.get("扩展", "作者")
@@ -175,6 +175,9 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             with open(指定图片链接, 'r', encoding='utf-8') as f: # type: ignore
                 links = f.readlines()
             specified_image_links = [x.strip() for x in links]
+        
+        if 前置执行:
+            exec_cmd(前置执行).wait()
 
         context = self.page.context
 
