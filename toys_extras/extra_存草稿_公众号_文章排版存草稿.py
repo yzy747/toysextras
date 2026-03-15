@@ -1,7 +1,7 @@
 from toys_extras.base_web import BaseWeb
 from playwright.sync_api import Page
 from toys_logger import logger
-from toys_utils import MarkdownToHtmlConverter, insert_image_link_to_markdown, copy_to_clipboard, exec_cmd
+from toys_utils import MarkdownToHtmlConverter, insert_image_link_to_markdown, copy_to_clipboard, exec_cmd_with_run
 import os
 import re
 import random
@@ -10,7 +10,7 @@ from pathlib import Path
 import shutil
 
 
-__version__ = "1.2.7"
+__version__ = "1.2.8"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -177,7 +177,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             specified_image_links = [x.strip() for x in links]
         
         if 前置执行:
-            exec_cmd(前置执行).wait()
+            exec_cmd_with_run(前置执行)
 
         context = self.page.context
 
