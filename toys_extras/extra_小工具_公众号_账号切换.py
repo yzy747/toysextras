@@ -1,10 +1,11 @@
 from toys_extras.base_web import BaseWeb
 from playwright.sync_api import Page
 from toys_logger import logger
+from toys_utils import exec_cmd_with_run
 import re
 
 
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 
 
 class Toy(BaseWeb):
@@ -16,8 +17,11 @@ class Toy(BaseWeb):
 
 
     def play(self):
+        前置执行 = self.config.get("扩展", "前置执行", fallback="")
         停留时长 = self.config.get("扩展", "停留时长(秒)", fallback="0")
-
+        if 前置执行:
+            exec_cmd_with_run(前置执行)
+        
         停留时长 = int(停留时长) * 1000
         pages = self.page.context.pages
         for p in pages:
