@@ -4,7 +4,7 @@ from toys_logger import logger
 from datetime import datetime, timedelta
 import os
 
-__version__ = "1.0.7"
+__version__ = "1.0.8"
 
 class Toy(BaseWeb):
 
@@ -105,18 +105,21 @@ class Toy(BaseWeb):
                     else:
                         self.封面设置.locator(".cheetah-radio-wrapper", has_text="单图").locator("input").click()
                         self.random_wait(1000, 1500)
-                    self.page.locator('.cheetah-form-item-control-input .coverUploaderView', has_text="选择封面").locator("visible=true").first.click()
+                    self.page.locator('.cheetah-form-item-control-input [class*=cheetah-spin-container]', has_text="选择封面").locator("visible=true").first.click()
 
-                    image_locator = self.page.locator("div.cheetah-modal-content .image")
+                    image_locator = self.page.locator("div.cheetah-modal-content [class*=imgItem]")
                     image_locator.first.wait_for(state="visible", timeout=30_000)
-                    
+                    self.random_wait(2000, 3000)
                     # 根据配置的序号选择封面图
                     for 序号 in 封面图序号列表:
                         available_images = image_locator.all()
                         if 序号 < len(available_images):
+                            # 第一个封面图默认选中，无需点击
+                            if 序号 == 0:
+                                continue
                             available_images[序号].click()
                             self.random_wait(1500, 3000)                
-                    self.page.get_by_role("button", name="确认").click()
+                    self.page.locator("button", has_text="确定").locator("visible=true").first.click()
                     self.random_wait(500, 1000)         
 
                 if 摘要:
