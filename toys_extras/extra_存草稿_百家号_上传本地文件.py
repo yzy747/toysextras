@@ -3,8 +3,9 @@ from playwright.sync_api import Page
 from toys_logger import logger
 from datetime import datetime, timedelta
 import os
+import re
 
-__version__ = "1.0.8"
+__version__ = "1.0.9"
 
 class Toy(BaseWeb):
 
@@ -13,8 +14,8 @@ class Toy(BaseWeb):
         self.result_table_view: list = [['文章名称', '状态', '错误信息', '文章链接']]
         self.url = "https://baijiahao.baidu.com/builder/rc/edit?type=news&is_from_cms=1"
         self.文章标题输入框 = self.page.locator(".input-box div[contenteditable=true]")
-        self.文章第1行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc p").first
-        self.文章第2行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc p").nth(1)
+        self.文章第1行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc > *").filter(has_text=re.compile(r'\S')).first
+        self.文章第2行 = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc > *").filter(has_text=re.compile(r'\S')).nth(1)
         self.hove_导入文档 = self.page.locator(".edui-for-bjhInsertionDrawer")
         self.button_导入文档 = self.page.get_by_text("导入文档")
         self.button_选择文档 = self.page.locator('.cheetah-upload button')
@@ -22,14 +23,14 @@ class Toy(BaseWeb):
         self.上传文档成功提示 = self.page.get_by_text("导入成功")
         self.保存草稿成功提示 = self.page.get_by_text("内容已存入草稿")
         
-        self.下方输入组件 = self.page.locator(".cheetah-form-item-control-input")
+        self.下方输入组件 = self.page.locator(".cheetah-form-item")
         self.封面设置 = self.下方输入组件.filter(has_text="封面")
         self.摘要输入框 = self.page.get_by_placeholder("请输入摘要")
         self.分类选择 = self.下方输入组件.filter(has_text="分类")
         self.事件来源时间 = self.page.get_by_placeholder("请选择时间")
         self.事件来源地点 = self.page.locator(".cheetah-select-selector", has_text="请选择地点").locator("input")
 
-        self.设置选项 = self.page.locator(".cheetah-form-item", has_text="设置")
+        self.设置选项 = self.下方输入组件.filter(has_text="设置")
     
     def delete_first_paragraph(self):
         first_line_length = len(self.文章第1行.text_content() or "")
@@ -105,22 +106,26 @@ class Toy(BaseWeb):
                     else:
                         self.封面设置.locator(".cheetah-radio-wrapper", has_text="单图").locator("input").click()
                         self.random_wait(1000, 1500)
-                    self.page.locator('.cheetah-form-item-control-input [class*=cheetah-spin-container]', has_text="选择封面").locator("visible=true").first.click()
-
-                    image_locator = self.page.locator("div.cheetah-modal-content [class*=imgItem]")
-                    image_locator.first.wait_for(state="visible", timeout=30_000)
-                    self.random_wait(2000, 3000)
-                    # 根据配置的序号选择封面图
-                    for 序号 in 封面图序号列表:
-                        available_images = image_locator.all()
-                        if 序号 < len(available_images):
-                            # 第一个封面图默认选中，无需点击
-                            if 序号 == 0:
-                                continue
-                            available_images[序号].click()
-                            self.random_wait(1500, 3000)                
-                    self.page.locator("button", has_text="确定").locator("visible=true").first.click()
-                    self.random_wait(500, 1000)         
+                    try:
+                        self.page.locator('.cheetah-form-item-control-input [class*=cheetah-spin-container]', has_text="选择封面").locator("visible=true").first.click()
+                        image_locator = self.page.locator("div.cheetah-modal-content [class*=imgItem]")
+                        image_locator.first.wait_for(state="visible", timeout=30_000)
+                        self.random_wait(2000, 3000)
+                        # 根据配置的序号选择封面图
+                        for 序号 in 封面图序号列表:
+                            available_images = image_locator.all()
+                            if 序号 < len(available_images):
+                                # 第一个封面图默认选中，无需点击
+                                if 序号 == 0:
+                                    continue
+                                available_images[序号].click()
+                                self.random_wait(1500, 3000)                
+                        self.page.locator("button", has_text="确定").locator("visible=true").first.click()
+                        self.random_wait(500, 1000) 
+                    except:
+                        self.is_failed = True    
+                        row[2] = "选择封面图可能错误"
+                        continue
 
                 if 摘要:
                     self.摘要输入框.fill(摘要)
@@ -131,7 +136,7 @@ class Toy(BaseWeb):
                     self.分类选择.locator(".cheetah-select-selector").click()
                     self.random_wait(500, 1000)
                     for 分类部分 in 分类.split("->"):
-                        self.page.get_by_text(分类部分).evaluate("(el) => el.click()")
+                        self.page.locator("cheetah-cascader-menu-item", has_text=re.compile(f"^${分类部分}$")).first.evaluate("(el) => el.click()")
                         self.random_wait(500, 1000)
                 
                 if 事件来源时间:
