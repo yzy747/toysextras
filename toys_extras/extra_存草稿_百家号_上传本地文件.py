@@ -68,6 +68,9 @@ class Toy(BaseWeb):
             try:
                 dir_name, filename = os.path.split(file)
                 self.page.goto(self.url)
+                article_editor = self.page.frame_locator("iframe[id='ueditor_0']").locator(".view.news-editor-pc")
+                if article_editor.inner_text().strip():
+                    article_editor.clear()
         
                 # 上传文档
                 self.hove_导入文档.click()
@@ -107,7 +110,13 @@ class Toy(BaseWeb):
                         self.封面设置.locator(".cheetah-radio-wrapper", has_text="单图").locator("input").click()
                         self.random_wait(1000, 1500)
                     try:
-                        self.page.locator('.cheetah-form-item-control-input [class*=cheetah-spin-container]', has_text="选择封面").locator("visible=true").first.click()
+                        cover_locator = self.page.locator('.cheetah-form-item-control-input [class*=cheetah-spin-container]')
+                        if cover_locator.get_by_text("更换").count() > 0:
+                            for _ in self.page.locator("[class*='removeIcon'] [class*='BjhBasicGuanbiteshu']").all():
+                                self.page.locator("[class*='removeIcon'] [class*='BjhBasicGuanbiteshu']").first.evaluate("(el) => el.click()")
+                                self.random_wait(500, 1000)
+                        cover_locator.get_by_text("选择封面").locator("visible=true").first.click()
+                        
                         image_locator = self.page.locator("div.cheetah-modal-content [class*=imgItem]")
                         image_locator.first.wait_for(state="visible", timeout=30_000)
                         self.random_wait(2000, 3000)
@@ -122,10 +131,10 @@ class Toy(BaseWeb):
                                 self.random_wait(1500, 3000)                
                         self.page.locator("button", has_text="确定").locator("visible=true").first.click()
                         self.random_wait(500, 1000) 
-                    except:
+                    except Exception as e:
+                        print(e)
                         self.is_failed = True    
                         row[2] = "选择封面图可能错误"
-                        continue
 
                 if 摘要:
                     self.摘要输入框.fill(摘要)
@@ -136,7 +145,7 @@ class Toy(BaseWeb):
                     self.分类选择.locator(".cheetah-select-selector").click()
                     self.random_wait(500, 1000)
                     for 分类部分 in 分类.split("->"):
-                        self.page.locator("cheetah-cascader-menu-item", has_text=re.compile(f"^${分类部分}$")).first.evaluate("(el) => el.click()")
+                        self.page.locator(".cheetah-cascader-menu-item-content", has_text=re.compile(f"^{分类部分}$")).last.evaluate("(el) => el.click()")
                         self.random_wait(500, 1000)
                 
                 if 事件来源时间:
