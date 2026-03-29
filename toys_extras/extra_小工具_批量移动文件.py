@@ -6,7 +6,7 @@ from toys_logger import logger
 from natsort import natsorted
 
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 
 class Toy(Base):
@@ -18,6 +18,7 @@ class Toy(Base):
     def play(self):
         目标目录 = self.config.get("扩展", "目标目录")
         每个子目录包含的项目数量 = self.config.getint("扩展", "每个子目录包含的项目数量")
+        仅补全 = True if self.config.get("扩展", "仅补全") == "是" else False
         子目录前缀 = self.config.get("扩展", "子目录前缀 -- 如需自动创建目录，则填此项")
         打乱顺序 = True if self.config.get("扩展", "打乱顺序") == "是" else False
         if not self.file_path:
@@ -35,13 +36,25 @@ class Toy(Base):
                 for i in os.listdir(目标目录)
                 if os.path.isdir(os.path.join(目标目录, i))
             ])
-        for batch_num, i in enumerate(range(0, len(files), 每个子目录包含的项目数量)):
-            batch = files[i:i + 每个子目录包含的项目数量]
-            if batch_num >= len(子目录列表):
+        moved_count = 0
+        for target_dir in 子目录列表:
+            if moved_count >= len(files):
                 break
-            target_dir = 子目录列表[batch_num]
-            if not os.path.exists(target_dir):
+            if os.path.exists(target_dir):
+                existing_files = [
+                    os.path.join(target_dir, i)
+                    for i in os.listdir(target_dir)
+                    if os.path.isfile(os.path.join(target_dir, i))
+                ]
+                existing_count = len(existing_files)
+            else:
                 os.makedirs(target_dir)
+                existing_count = 0
+            if 仅补全 and existing_count >= 每个子目录包含的项目数量:
+                continue
+            need_count = 每个子目录包含的项目数量 - existing_count if 仅补全 else 每个子目录包含的项目数量
+            batch = files[moved_count:moved_count + need_count]
+            moved_count += len(batch)
             for item in batch:
                 try:
                     dest = os.path.join(target_dir, os.path.basename(item))
