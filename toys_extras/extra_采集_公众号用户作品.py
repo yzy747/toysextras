@@ -8,7 +8,7 @@ import requests
 import os
 import re
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 
 class Toy(BaseWeb):
@@ -118,9 +118,9 @@ class Toy(BaseWeb):
         publish_time_end_timestamp = int(publish_time_end.timestamp())
 
         self.navigate()
-        self.page.locator('[title="公众号"]').wait_for()
-        if self.page.locator("a", has_text="登录").is_visible():
-            self.page.locator("a", has_text="登录").click()
+        login_button = self.page.locator("a", has_text=re.compile("^登录$"))
+        if login_button.is_visible():
+            login_button.click()
 
         # 提取浏览器cookie
         cookie_list = self.page.context.cookies()
