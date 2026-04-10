@@ -130,7 +130,10 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         add_video_url = self.url + f"/cgi-bin/appmsg?t=media/videomsg_edit&action=video_edit&type=15&isNew=1&token={self.token}&lang=zh_CN"
         
         self.page.bring_to_front()
-        self.page.goto(add_video_url, wait_until="domcontentloaded")
+        try:
+            self.page.goto(add_video_url, wait_until="domcontentloaded")
+        except Exception:
+            ...
 
         selector = "input[name=vid][type=file]"
         self.page.locator(selector).wait_for(state="attached", timeout=60_000)
