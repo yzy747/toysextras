@@ -62,6 +62,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             "图片最小宽度": self._cfg_int("图片最小宽度"),
             "图片最小高度": self._cfg_int("图片最小高度"),
             "视频": self._cfg("视频"),
+            "视频原创": self._cfg("视频原创"),
             "话题数量": self._cfg_int("话题数量 -- 话题数量小于话题个数时，将会随机抽取"),
             "排版输出目录": self._cfg("排版输出目录"),
             "完成后移动至": self._cfg("完成后移动至"),
@@ -126,14 +127,11 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
 
     # ── 视频上传 / 查询 ──────────────────────────
 
-    def upload_video(self, video_path, max_retries=3):
+    def upload_video(self, video_path, max_retries=3, is_original: bool = True):
         add_video_url = self.url + f"/cgi-bin/appmsg?t=media/videomsg_edit&action=video_edit&type=15&isNew=1&token={self.token}&lang=zh_CN"
         
         self.page.bring_to_front()
-        try:
-            self.page.goto(add_video_url, wait_until="domcontentloaded")
-        except Exception:
-            ...
+        self.page.goto(add_video_url, wait_until="domcontentloaded")
 
         selector = "input[name=vid][type=file]"
         self.page.locator(selector).wait_for(state="attached", timeout=60_000)
@@ -168,13 +166,15 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 self.page.get_by_role("button", name="完成").click()
 
                 self.page.locator("input[name=title]").fill(video_title)
-                self.page.locator("[class*=video-setting]", has_text="原创声明").locator("label").first.click()
-                self.page.get_by_role("button", name="确定").click()
-                self.page.wait_for_timeout(2000)
+                if is_original:
+                    self.page.locator("[class*=video-setting]", has_text="原创声明").locator("label").first.click()
+                    self.page.get_by_role("button", name="确定").click()
+                    self.page.wait_for_timeout(2000)
                 self.page.get_by_text("我已阅读并同意《公众平台视频上传服务规则》").click()
                 self.page.wait_for_timeout(1000)
                 self.page.get_by_role("button", name="保存", exact=True).click()
-                
+                self.page.get_by_placeholder("搜索视频").wait_for(state="visible", timeout=120_000)
+                self.random_wait(1000, 2000)
                 return video_title
                 
             except Exception as e:
@@ -517,7 +517,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             self._login_and_get_token(self.page)
             for file in self.files:
                 for video_file in glob(os.path.join(os.path.dirname(file), "*.mp4")):
-                    video_title = self.upload_video(video_file)
+                    video_title = self.upload_video(video_file, is_original=cfg["视频原创"] == "是")
                     video_file_map.setdefault(file, set()).add(video_title)
             for file, video_titles in video_file_map.items():
                 for video_title in video_titles:
