@@ -169,7 +169,9 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 if is_original:
                     self.page.locator("[class*=video-setting]", has_text="原创声明").locator("label").first.click()
                     self.page.get_by_role("button", name="确定").click()
-                    self.page.wait_for_timeout(2000)
+                else:
+                    self.page.get_by_role("button", name="继续提交").click()
+                self.page.wait_for_timeout(2000)
                 self.page.get_by_text("我已阅读并同意《公众平台视频上传服务规则》").click()
                 self.page.wait_for_timeout(1000)
                 self.page.get_by_role("button", name="保存", exact=True).click()
