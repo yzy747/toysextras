@@ -12,7 +12,7 @@ import shutil
 from glob import glob
 
 
-__version__ = "1.2.9"
+__version__ = "1.2.10"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -130,7 +130,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         add_video_url = self.url + f"/cgi-bin/appmsg?t=media/videomsg_edit&action=video_edit&type=15&isNew=1&token={self.token}&lang=zh_CN"
         
         self.page.bring_to_front()
-        self.page.goto(add_video_url)
+        self.page.goto(add_video_url, wait_until="domcontentloaded")
 
         selector = "input[name=vid][type=file]"
         self.page.locator(selector).wait_for(state="attached", timeout=60_000)
@@ -183,14 +183,14 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         url = self.url + f"/cgi-bin/appmsg?begin=0&count=9&t=media/video_list&action=list_video&type=15&query={video_title}&token={self.token}&lang=zh_CN"
         for _ in range(max_retries):
             try:
-                self.page.goto(url)
+                self.page.goto(url, wait_until="domcontentloaded")
                 approved = self.page.locator("tr").filter(has_text=video_title, visible=True).get_by_text("已通过")
                 no_result = self.page.locator("tr").get_by_text("没有搜索结果，请重新输入关键字或者查看")
                 approved.or_(no_result).wait_for(state="visible", timeout=180_000)
                 if no_result.is_visible():
                     continue
                 if approved.is_visible():
-                    return               
+                    return True       
             except TimeoutError:
                 return False
             except Exception:
