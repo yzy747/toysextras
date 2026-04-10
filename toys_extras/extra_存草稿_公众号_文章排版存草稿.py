@@ -157,7 +157,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
 
         for attempt in range(max_retries):
             try:
-                self.page.locator(".cover__options__item img").first.wait_for(state="visible", timeout=10_000)
+                self.page.locator(".cover__options__item img").first.wait_for(state="visible", timeout=120_000)
                 self.page.locator(".cover__options__item img").first.click()
                 
                 self.page.get_by_role("button", name="完成").wait_for(state="visible", timeout=10_000)
@@ -183,7 +183,11 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         url = self.url + f"/cgi-bin/appmsg?begin=0&count=9&t=media/video_list&action=list_video&type=15&query={video_title}&token={self.token}&lang=zh_CN"
         for _ in range(max_retries):
             try:
-                self.page.goto(url, wait_until="domcontentloaded")
+                try:
+                    self.page.goto(url)
+                except Exception:
+                    continue
+                self.page.wait_for_timeout(1000)
                 approved = self.page.locator("tr").filter(has_text=video_title, visible=True).get_by_text("已通过")
                 no_result = self.page.locator("tr").get_by_text("没有搜索结果，请重新输入关键字或者查看")
                 approved.or_(no_result).wait_for(state="visible", timeout=180_000)
