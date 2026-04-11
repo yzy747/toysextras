@@ -173,8 +173,11 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 self.page.get_by_text("我已阅读并同意《公众平台视频上传服务规则》").click()
                 self.page.wait_for_timeout(1000)
                 self.page.get_by_role("button", name="保存", exact=True).click()
-                if not is_original:
-                    self.page.get_by_role("button", name="继续提交").click()
+                submit_success = self.page.get_by_placeholder("搜索视频")
+                continue_btn = self.page.get_by_role("button", name="继续提交")
+                submit_success.or_(continue_btn).wait_for(state="visible", timeout=30_000)
+                if submit_success.is_visible():
+                    continue_btn.click()
                 self.page.get_by_placeholder("搜索视频").wait_for(state="visible", timeout=120_000)
                 self.random_wait(1000, 2000)
                 return video_title
