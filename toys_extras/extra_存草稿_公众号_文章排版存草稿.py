@@ -176,7 +176,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 submit_success = self.page.get_by_placeholder("搜索视频")
                 continue_btn = self.page.get_by_role("button", name="继续提交")
                 submit_success.or_(continue_btn).wait_for(state="visible", timeout=30_000)
-                if submit_success.is_visible():
+                if continue_btn.is_visible():
                     continue_btn.click()
                 self.page.get_by_placeholder("搜索视频").wait_for(state="visible", timeout=120_000)
                 self.random_wait(1000, 2000)
