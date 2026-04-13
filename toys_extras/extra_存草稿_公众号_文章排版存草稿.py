@@ -4,7 +4,6 @@ from toys_logger import logger
 from toys_utils import MarkdownToHtmlConverter, insert_image_link_to_markdown, copy_to_clipboard, exec_cmd_with_run
 import os
 import re
-import json
 import random
 from natsort import natsorted
 from pathlib import Path
@@ -12,7 +11,7 @@ import shutil
 from glob import glob
 
 
-__version__ = "1.2.10"
+__version__ = "1.2.11"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -175,10 +174,10 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 self.page.get_by_role("button", name="保存", exact=True).click()
                 submit_success = self.page.get_by_placeholder("搜索视频")
                 continue_btn = self.page.get_by_role("button", name="继续提交")
-                submit_success.or_(continue_btn).wait_for(state="visible", timeout=30_000)
+                submit_success.or_(continue_btn).wait_for(state="visible", timeout=60_000)
                 if continue_btn.is_visible():
                     continue_btn.click()
-                self.page.get_by_placeholder("搜索视频").wait_for(state="visible", timeout=120_000)
+                    self.page.get_by_placeholder("搜索视频").wait_for(state="visible", timeout=120_000)
                 self.random_wait(1000, 2000)
                 return video_title
                 
@@ -202,9 +201,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                 if no_result.is_visible():
                     continue
                 if approved.is_visible():
-                    return True       
-            except TimeoutError:
-                return False
+                    return True
             except Exception:
                 self.random_wait(1000, 2000)
                 continue
@@ -315,6 +312,23 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
     # ── Markdown 内容预处理 ──────────────────────
 
     def _prepare_md_content(self, file_content, file, dir_name, cfg, specified_image_links, template_dirs, topics):
+        if topics is None:
+            tags_in_content = re.findall(r'#\S+', file_content)
+            if len(tags_in_content) >= 2:
+                tags_line = next((line for line in file_content.splitlines() if re.search(r'#\S+.*#\S+', line)), None)
+                if tags_line:
+                    topics = {"type": "wx", "num": len(tags_in_content), "tags": [tag.lstrip('#') for tag in tags_in_content]}
+                    file_lines = file_content.splitlines()
+                    cleaned_lines = []
+                    for line in file_lines:
+                        if line == tags_line:
+                            continue
+                        if re.search(r'#\S+.*#\S+', line):
+                            cleaned_lines.append(re.sub(r'(?<!\S)#\S+', '', line).strip())
+                        else:
+                            cleaned_lines.append(line)
+                    file_content = '\n'.join(cleaned_lines)
+
         if cfg["插图数量"]:
             if specified_image_links:
                 image_urls = random.sample(specified_image_links, k=cfg["插图数量"])
@@ -584,7 +598,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                                 logger.warning("没有找到模板文件")
                                 line[1], line[2] = "失败", "没有找到模板文件"
                                 return
-
+                            # 如果file_content中某行 有 类似 "#新年红大衣  #过年氛围  #随手拍照" 的多个标签内容,单个不处理，需要处理提取其为topic,并将其在file_content中移除
                             file_content = self._prepare_md_content(
                                 file_content, file, dir_name, cfg, specified_image_links,
                                 template_dirs, topics)
