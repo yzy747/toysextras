@@ -11,7 +11,7 @@ import shutil
 from glob import glob
 
 
-__version__ = "1.2.11"
+__version__ = "1.2.12"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -251,7 +251,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
     # ── 编辑器：粘贴内容 ─────────────────────────
 
     def _paste_content(self, popup, file_content):
-        article_div = popup.locator("div[contenteditable=true]:visible")
+        article_div = popup.locator(".rich_media_content div[contenteditable=true]:visible")
         if any(tag in file_content for tag in ["<html", "<body", "<head"]):
             chinese_src = "".join(re.findall(r"[\u4e00-\u9fa5]+", file_content))
             for _ in range(10):
@@ -624,7 +624,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
                         h1.evaluate("element => element.remove()")
                     else:
                         title = file_name_without_ext.replace("改写_", "")
-                    popup.get_by_placeholder("请在这里输入标题").fill(title[:64])
+                    popup.locator(".title-editor__input div[contenteditable=true]").fill(title[:64])
 
                     # 文章属性
                     try:
