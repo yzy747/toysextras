@@ -11,7 +11,7 @@ import shutil
 from glob import glob
 
 
-__version__ = "1.2.12"
+__version__ = "1.2.13"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -244,7 +244,7 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
         popup.bring_to_front()
         if popup.locator(".weui-desktop-dialog").locator("visible=true").first.is_visible():
             popup.locator(".weui-desktop-dialog__close-btn").locator("visible=true").first.click()
-        popup.locator("#js_add_appmsg").click()
+        popup.locator("#js_add_appmsg").evaluate("element => element.click()")
         self.random_wait(200, 400)
         popup.locator('.js_create_article[title="写新文章"]').evaluate("element => element.click()")
 
