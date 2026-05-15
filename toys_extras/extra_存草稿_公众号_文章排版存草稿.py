@@ -11,7 +11,7 @@ import shutil
 from glob import glob
 
 
-__version__ = "1.2.13"
+__version__ = "1.2.14"
 
 
 class Toy(BaseWeb, MarkdownToHtmlConverter):
@@ -506,8 +506,6 @@ class Toy(BaseWeb, MarkdownToHtmlConverter):
             return
 
         cfg = self._parse_config()
-
-        template_dirs = self.get_article_template_dirs()
 
         if cfg["创作来源"] == "素材来源官方媒体/网络新闻" and (not cfg["素材来源"] or not cfg["来源平台"]):
             self.result_table_view.append(["所有", "失败", "素材来源官方媒体/网络新闻时，素材来源和来源账号/平台不能为空", "", ""])
